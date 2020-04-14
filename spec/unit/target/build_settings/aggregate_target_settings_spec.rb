@@ -111,6 +111,17 @@ module Pod
           it 'excludes the `USE_HEADERMAP` from the user project' do
             @xcconfig.to_hash['USE_HEADERMAP'].should.be.nil
           end
+
+          it 'only inherits the parent SWIFT_INCLUDE_PATHS when no paths to import' do
+            @xcconfig.to_hash['SWIFT_INCLUDE_PATHS'].should.equal '$(inherited)'
+          end
+
+          it 'wraps SWIFT_INCLUDE_PATHS in quotes when there are non-inherited paths to import' do
+            @generator.send(:pod_targets).first.stubs(:uses_swift?).returns(true)
+            @generator.send(:pod_targets).first.stubs(:build_as_framework?).returns(false)
+            @xcconfig = @generator.generate
+            @xcconfig.to_hash['SWIFT_INCLUDE_PATHS'].should.equal '"$(inherited) "SOME_PATH""'
+          end
         end
 
         #-----------------------------------------------------------------------#
